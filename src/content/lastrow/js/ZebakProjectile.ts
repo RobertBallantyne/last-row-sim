@@ -17,6 +17,7 @@ import {
 } from "osrs-sdk";
 import { ZebakStyle, rollZebakDamage } from "./ZebakPattern";
 import { scaleDamage } from "./LastRowScaling";
+import { ZebakTiming } from "./PhantomTimings";
 // Exported with osrscachereader (gameval names ZEBAK_MAGE_PROJANIM_INITIAL / ZEBAK_RANGE_PROJANIM_INITIAL):
 //   modelBuilder spotanim 2176 name zebak_jug
 //   modelBuilder spotanim 2178 name zebak_rock
@@ -24,11 +25,10 @@ import JugModel from "../assets/models/zebak_jug.glb";
 import RockModel from "../assets/models/zebak_rock.glb";
 
 // Ticks after Zebak winds up (from the GameMaker sim's notes):
-//   0: mouth full, 1: pot/rock appears, 1-3: rises, 4: breaks and the projectile launches,
-//   4 + flight: prayer is checked, next tick: damage lands.
-// Higher path levels (4 and 6) make the flight 1 tick shorter.
+//   0: mouth full, 1: pot/rock appears and rises, launch tick: breaks and the projectile flies at the player,
+//   launch + flight: prayer is checked, next tick: damage lands.
+// The launch tick and flight time depend on Zebak's path level (see PhantomTimings.zebakTiming).
 const APPEAR_TICK = 1;
-const LAUNCH_TICK = 4;
 const RISE_HEIGHT = 4;
 const LAND_HEIGHT = 1;
 
@@ -41,12 +41,9 @@ const STYLE_COLOR: Record<ZebakStyle, string> = {
   range: "#9C8A5A",
 };
 
-export function zebakFlightTicks(pathLevel: number) {
-  return pathLevel >= 4 ? 2 : 3;
-}
-
 export class ZebakProjectile extends Entity {
   age = 0;
+  private launchTick: number;
   private landTick: number;
 
   constructor(
@@ -55,11 +52,12 @@ export class ZebakProjectile extends Entity {
     private target: Player,
     readonly style: ZebakStyle,
     private source: Unit,
-    flightTicks: number,
+    timing: ZebakTiming,
     private damageMultiplier: number,
   ) {
     super(region, { ...origin });
-    this.landTick = LAUNCH_TICK + flightTicks;
+    this.launchTick = timing.launchTick;
+    this.landTick = timing.launchTick + timing.flightTicks;
   }
 
   get collisionType() {
@@ -108,11 +106,11 @@ export class ZebakProjectile extends Entity {
   // Location (in tile coordinates) and height of the projectile at this moment.
   private flightPosition(tickPercent: number): Location3 {
     const t = this.age + tickPercent;
-    if (t < LAUNCH_TICK) {
-      const rise = Math.max(0, (t - APPEAR_TICK) / (LAUNCH_TICK - APPEAR_TICK));
+    if (t < this.launchTick) {
+      const rise = Math.max(0, (t - APPEAR_TICK) / (this.launchTick - APPEAR_TICK));
       return { x: this.origin.x, y: this.origin.y, z: 3 + rise * RISE_HEIGHT };
     }
-    const progress = Math.min(1, (t - LAUNCH_TICK) / (this.landTick - LAUNCH_TICK));
+    const progress = Math.min(1, (t - this.launchTick) / (this.landTick - this.launchTick));
     const to = this.target.getPerceivedLocation(tickPercent);
     const startHeight = 3 + RISE_HEIGHT;
     return {
@@ -134,7 +132,7 @@ export class ZebakProjectile extends Entity {
     const tile = Settings.tileSize;
     context.fillStyle = this.color;
     context.beginPath();
-    context.arc((x + 0.5) * tile, (y + 0.5) * tile, tile * (this.age < LAUNCH_TICK ? 0.4 : 0.25), 0, Math.PI * 2);
+    context.arc((x + 0.5) * tile, (y + 0.5) * tile, tile * (this.age < this.launchTick ? 0.4 : 0.25), 0, Math.PI * 2);
     context.fill();
   }
 

@@ -6,7 +6,8 @@ import { BoulderStrike } from "./BoulderStrike";
 import { LightningStrike } from "./LightningStrike";
 import { ROW_TILES, SAFE, rollLightningCycle } from "./LightningPattern";
 import { ArenaBoss } from "./ArenaBoss";
-import { ZebakProjectile, zebakFlightTicks } from "./ZebakProjectile";
+import { ZebakProjectile } from "./ZebakProjectile";
+import { babaImpactTick, zebakAttackInterval, zebakTiming } from "./PhantomTimings";
 import { ZebakStyle, rollZebakStyle } from "./ZebakPattern";
 import { damageMultiplier } from "./LastRowScaling";
 
@@ -27,7 +28,6 @@ interface ArenaAttack {
 const FIRST_LIGHTNING_DELAY = 2;
 const LIGHTNING_CYCLE_TICKS = 6;
 const BOULDER_INTERVAL_TICKS = 3;
-const ZEBAK_INTERVAL_TICKS = 4;
 
 class LightningAttack implements ArenaAttack {
   private ticksUntilNext = FIRST_LIGHTNING_DELAY;
@@ -63,9 +63,7 @@ class LightningAttack implements ArenaAttack {
 
 // Ba-Ba throws a boulder at the player's current tile every 3 ticks,
 // starting 0-2 ticks after the first lightning cycle.
-// TODO: path level may speed the boulders up too. The cache has TOA_BABA_ROCK_FALL / _FASTER / _FASTEST graphics
-// (2250-2252), but those are her room's Rockfall and their lengths include debris, so the phantom's impact tick per
-// path level isn't known. For now path level only scales damage.
+// Path level makes the boulders fall faster (not more often): see PhantomTimings.babaImpactTick.
 class BabaBoulderAttack implements ArenaAttack {
   private ticksUntilNext = FIRST_LIGHTNING_DELAY + Math.floor(Random.get() * 3);
 
@@ -73,6 +71,7 @@ class BabaBoulderAttack implements ArenaAttack {
     private region: Region,
     private source: Unit,
     private baba: ArenaBoss,
+    private pathLevel: number,
     private damageMultiplier: number,
   ) {}
 
@@ -83,13 +82,20 @@ class BabaBoulderAttack implements ArenaAttack {
     this.ticksUntilNext = BOULDER_INTERVAL_TICKS;
     this.baba.playAttackAnimation();
     this.region.addEntity(
-      new BoulderStrike(this.region, { x: player.location.x, y: player.location.y }, this.source, this.damageMultiplier),
+      new BoulderStrike(
+        this.region,
+        { x: player.location.x, y: player.location.y },
+        this.source,
+        this.damageMultiplier,
+        babaImpactTick(this.pathLevel),
+      ),
     );
   }
 }
 
-// Zebak alternates magic pots and ranged rocks every 4 ticks, aimed at the player wherever they move.
-// Path level 4+ shortens the projectile's flight by a tick.
+// Zebak alternates magic pots and ranged rocks, aimed at the player wherever they move.
+// Path level makes him attack more often and his jug/rock break and fly faster:
+// see PhantomTimings.zebakAttackInterval and zebakTiming.
 class ZebakAttack implements ArenaAttack {
   private ticksUntilNext = FIRST_LIGHTNING_DELAY;
   private previousStyle: ZebakStyle | null = null;
@@ -106,7 +112,7 @@ class ZebakAttack implements ArenaAttack {
     if (--this.ticksUntilNext > 0) {
       return;
     }
-    this.ticksUntilNext = ZEBAK_INTERVAL_TICKS;
+    this.ticksUntilNext = zebakAttackInterval(this.pathLevel);
     const style = rollZebakStyle(this.previousStyle, () => Random.get());
     this.previousStyle = style;
     this.zebak.playAttackAnimation();
@@ -117,7 +123,7 @@ class ZebakAttack implements ArenaAttack {
         player,
         style,
         this.source,
-        zebakFlightTicks(this.pathLevel),
+        zebakTiming(this.pathLevel),
         this.damageMultiplier,
       ),
     );
@@ -141,7 +147,7 @@ export class WardenAttackController extends Entity {
     const { raidLevel, zebakPathLevel, babaPathLevel } = difficulty;
     this.attacks = [new LightningAttack(region, warden, damageMultiplier(raidLevel))];
     if (baba) {
-      this.attacks.push(new BabaBoulderAttack(region, warden, baba, damageMultiplier(raidLevel, babaPathLevel)));
+      this.attacks.push(new BabaBoulderAttack(region, warden, baba, babaPathLevel, damageMultiplier(raidLevel, babaPathLevel)));
     }
     if (zebak) {
       this.attacks.push(
