@@ -1,0 +1,85 @@
+<div>
+  <style>
+    #lastrow_credits { font-size: 14px; }
+    #right_panel #lastrow_credits a {
+      display: inline;
+      width: auto;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font-size: inherit;
+      text-decoration: underline;
+      color: #aaaaff;
+    }
+  </style>
+  <h3>Last Row Sim</h3>
+  <p>Tumeken's Warden, last row (P3 enrage)</p>
+
+  <label for="lastrow_raidLevel">Raid level (0-600)</label>
+  <input type="text" inputmode="numeric" id="lastrow_raidLevel" />
+
+  <label for="lastrow_zebakPathLevel">Zebak path level</label>
+  <select id="lastrow_zebakPathLevel">
+    <option value="-1">Off</option>
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+  </select>
+
+  <label for="lastrow_babaPathLevel">Ba-Ba path level</label>
+  <select id="lastrow_babaPathLevel">
+    <option value="-1">Off</option>
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+  </select>
+
+  <label for="lastrow_supplies">Supplies</label>
+  <select id="lastrow_supplies"><!-- options filled in by LastRowRegion --></select>
+  <div>
+    <input type="checkbox" id="lastrow_lightbearer" />
+    <label for="lastrow_lightbearer">Lightbearer (replaces ring)</label>
+  </div>
+  <button id="lastrow_saveLayout">Save inventory layout</button>
+  <button id="lastrow_resetLayout">Reset inventory layout</button>
+  <span id="lastrow_layoutStatus"></span>
+
+  <label for="lastrow_startingHitpointsPercent">Warden HP at last row (%)</label>
+  <input type="text" inputmode="numeric" id="lastrow_startingHitpointsPercent" />
+
+  <p id="lastrow_summary"></p>
+
+  <div id="lastrow_credits">
+    <hr />
+    <p><b>Credits</b></p>
+    <p>
+      Mechanics and timings researched by the
+      <a href="https://gx.games/games/6f00u8/last-row-sim/" target="_blank" rel="noopener">GameMaker Last Row Sim</a>.
+    </p>
+    <p>
+      Built on the
+      <a href="https://github.com/OldSchoolSDK/InfernoTrainer" target="_blank" rel="noopener">Inferno Trainer</a>
+      and its game engine
+      <a href="https://github.com/OldSchoolSDK/osrs-sdk" target="_blank" rel="noopener">osrs-sdk</a>
+      by the OldSchoolSDK contributors.
+    </p>
+    <p>
+      Models exported from the game cache with
+      <a href="https://github.com/Dezinater/osrscachereader" target="_blank" rel="noopener">osrscachereader</a>.
+      Item and boss data from the
+      <a href="https://oldschool.runescape.wiki/" target="_blank" rel="noopener">OSRS Wiki</a>.
+    </p>
+    <p>
+      Licensed under the
+      <a href="LICENSE.txt" target="_blank" rel="noopener">GNU GPL v3</a>.
+    </p>
+  </div>
+</div>
