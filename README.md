@@ -3,6 +3,8 @@
 A practice simulator for the last row of Tumeken's Warden (Tombs of Amascut, phase 3 enrage): red lightning,
 Ba-Ba's boulders and Zebak's jugs and rocks, on real 600ms game ticks with OSRS movement, prayers and inventory.
 
+Source: https://github.com/RobertBallantyne/last-row-sim
+
 ## Features
 
 - Lightning patterns, boulder and Zebak timings based on the GameMaker Last Row Sim's in-game research
