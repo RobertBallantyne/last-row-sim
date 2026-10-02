@@ -7,7 +7,7 @@ import { LightningStrike } from "./LightningStrike";
 import { ROW_TILES, SAFE, rollLightningCycle } from "./LightningPattern";
 import { ArenaBoss } from "./ArenaBoss";
 import { ZebakProjectile } from "./ZebakProjectile";
-import { babaImpactTick, zebakAttackInterval, zebakTiming } from "./PhantomTimings";
+import { ZEBAK_ATTACK_INTERVAL, babaImpactTick, zebakTiming } from "./PhantomTimings";
 import { ZebakStyle, rollZebakStyle } from "./ZebakPattern";
 import { damageMultiplier } from "./LastRowScaling";
 
@@ -94,8 +94,8 @@ class BabaBoulderAttack implements ArenaAttack {
 }
 
 // Zebak alternates magic pots and ranged rocks, aimed at the player wherever they move.
-// Path level makes him attack more often and his jug/rock break and fly faster:
-// see PhantomTimings.zebakAttackInterval and zebakTiming.
+// He attacks every 4 ticks at any path level; path level makes his jug/rock break and fly faster
+// (see PhantomTimings).
 class ZebakAttack implements ArenaAttack {
   private ticksUntilNext = FIRST_LIGHTNING_DELAY;
   private previousStyle: ZebakStyle | null = null;
@@ -112,7 +112,7 @@ class ZebakAttack implements ArenaAttack {
     if (--this.ticksUntilNext > 0) {
       return;
     }
-    this.ticksUntilNext = zebakAttackInterval(this.pathLevel);
+    this.ticksUntilNext = ZEBAK_ATTACK_INTERVAL;
     const style = rollZebakStyle(this.previousStyle, () => Random.get());
     this.previousStyle = style;
     this.zebak.playAttackAnimation();

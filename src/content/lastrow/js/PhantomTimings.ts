@@ -12,12 +12,10 @@ export interface ZebakTiming {
   flightTicks: number;
 }
 
-// Zebak's attack rate: 4 ticks, a tick faster every two path levels (2 ticks from path 4).
-// (The GameMaker sim's notes say "every 4 ticks regardless of path level"; this follows player reports that his
-// attack rate does speed up.)
-export function zebakAttackInterval(pathLevel: number): number {
-  return 4 - Math.floor(Math.min(Math.max(pathLevel, 0), 4) / 2);
-}
+// Zebak's phantom attacks every 4 ticks at any path level: his enraged attack speed (the wiki lists 7 normally and 4
+// enraged; in his room at path 3 he still attacks every 7 ticks, then 4 on enrage). The GameMaker sim's notes agree:
+// "a new pot/rock every 4 ticks regardless of path level". Path level only speeds up the jug/rock (zebakTiming).
+export const ZEBAK_ATTACK_INTERVAL = 4;
 
 export function zebakTiming(pathLevel: number): ZebakTiming {
   return pathLevel >= 4 ? { launchTick: 3, flightTicks: 2 } : { launchTick: 4, flightTicks: 3 };
