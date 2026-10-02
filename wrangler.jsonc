@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "inferno-trainer",
+  "name": "last-row-sim",
   "compatibility_date": "2026-07-17",
   "observability": {
     "enabled": true
