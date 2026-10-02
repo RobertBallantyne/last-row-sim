@@ -14,6 +14,7 @@ import {
   Settings,
 } from "osrs-sdk";
 import { ModelFit, modelOffsets, modelOptions } from "./ModelFit";
+import { ROW_LENGTH, ROW_Y, rowTileX } from "./LastRowConstants";
 
 export interface ArenaBossAppearance {
   name: string;
@@ -28,7 +29,6 @@ export interface ArenaBossAppearance {
 // Non-attackable side boss (Zebak, Ba-Ba) so attacks have a visible origin.
 export class ArenaBoss extends Entity {
   private image: HTMLImageElement;
-  private lastRotation = 0;
 
   constructor(
     region: Region,
@@ -77,19 +77,15 @@ export class ArenaBoss extends Entity {
     }
   }
 
-  // face the player, the same way Units face their target
-  getPerceivedRotation(tickPercent = 0) {
-    const player = this.region.players[0];
-    if (player) {
-      const target = player.getPerceivedLocation(tickPercent);
-      this.lastRotation = -Pathing.angle(
-        this.location.x + this.size / 2,
-        this.location.y - this.size / 2,
-        target.x + player.size / 2,
-        target.y - player.size / 2,
-      );
-    }
-    return this.lastRotation;
+  // Always face the middle of the last row rather than turning to track the player.
+  // Uses the same angle maths as Unit.getPerceivedRotation, just with a fixed target.
+  getPerceivedRotation() {
+    return -Pathing.angle(
+      this.location.x + this.size / 2,
+      this.location.y - this.size / 2,
+      rowTileX(Math.floor(ROW_LENGTH / 2)) + 0.5,
+      ROW_Y - 0.5,
+    );
   }
 
   // the tile at the centre of the boss, in location coordinates; where its projectiles start
