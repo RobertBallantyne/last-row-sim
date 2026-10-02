@@ -1,7 +1,7 @@
 "use strict";
 
-import { GLTFModel, Location, MagicWeapon, Mob, Region, UnitBonuses, UnitOptions } from "osrs-sdk";
-import { WARDEN_SIZE } from "../LastRowConstants";
+import { GLTFModel, Location, MagicWeapon, Mob, Pathing, Region, UnitBonuses, UnitOptions } from "osrs-sdk";
+import { ROW_LENGTH, ROW_Y, WARDEN_SIZE, rowTileX } from "../LastRowConstants";
 import { wardenDefence, wardenMaxHitpoints } from "../LastRowScaling";
 import { LastRowSettings } from "../LastRowSettings";
 import { WARDEN_FIT, modelOffsets, modelOptions } from "../ModelFit";
@@ -32,6 +32,17 @@ export class Warden extends Mob {
 
   get walkingPoseId() {
     return 0;
+  }
+
+  // Always face the middle of the last row rather than turning to track the player.
+  // Uses the same angle maths as Unit.getPerceivedRotation, just with a fixed target.
+  getPerceivedRotation() {
+    return -Pathing.angle(
+      this.location.x + this.size / 2,
+      this.location.y - this.size / 2,
+      rowTileX(Math.floor(ROW_LENGTH / 2)) + 0.5,
+      ROW_Y - 0.5,
+    );
   }
 
   mobName() {
